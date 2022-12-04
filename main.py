@@ -104,7 +104,7 @@ if __name__ == "__main__":
 		policy.load(f"./models/{policy_file}")
 
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
-	replay_buffer.convert_D4RL(d4rl.qlearning_dataset(env))
+	replay_buffer.convert_D4RL(env.get_dataset())
 	if args.normalize:
 		mean,std = replay_buffer.normalize_states() 
 	else:
