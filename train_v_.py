@@ -7,18 +7,38 @@ import d4rl
 
 import utils
 import TD3_BC
-import matplotlib.pyplot as plt
+
 
 # Runs policy for X episodes and returns D4RL score
 # A fixed seed is used for the eval environment
-import copy
+def eval_policy(policy, env_name, seed, mean, std, seed_offset=100, eval_episodes=10):
+    eval_env = gym.make(env_name)
+    eval_env.seed(seed + seed_offset)
+
+    avg_reward = 0.
+    for _ in range(eval_episodes):
+        state, done = eval_env.reset(), False
+        while not done:
+            state = (np.array(state).reshape(1, -1) - mean) / std
+            action = policy.select_action(state)
+            state, reward, done, _ = eval_env.step(action)
+            avg_reward += reward
+
+    avg_reward /= eval_episodes
+    d4rl_score = eval_env.get_normalized_score(avg_reward) * 100
+
+    print("---------------------------------------")
+    print(f"Evaluation over {eval_episodes} episodes: {avg_reward:.3f}, D4RL score: {d4rl_score:.3f}")
+    print("---------------------------------------")
+    return d4rl_score
+
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     # Experiment
     parser.add_argument("--policy", default="TD3_BC")  # Policy name
-    parser.add_argument("--env", default="hopper-medium-expert-v2")  # OpenAI gym environment name
+    parser.add_argument("--env", default="hopper-medium-expert-append-v2")  # OpenAI gym environment name
     parser.add_argument("--seed", default=1, type=int)  # Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--eval_freq", default=5e3, type=int)  # How often (time steps) we evaluate
     parser.add_argument("--max_timesteps", default=1e6, type=int)  # Max time steps to run environment
@@ -50,7 +70,7 @@ if __name__ == "__main__":
     if args.save_model and not os.path.exists("./models"):
         os.makedirs("./models")
 
-    env = gym.make("hopper-medium-v2")
+    env  = gym.make("hopper-medium-v2")
     env1 = gym.make("hopper-expert-v2")
 
     # Set seeds
@@ -84,87 +104,27 @@ if __name__ == "__main__":
         policy_file = file_name if args.load_model == "default" else args.load_model
         policy.load(f"./models/{policy_file}")
 
-    policy.value.load_state_dict(torch.load("./model/"+args.env+".pt"))
-    # policy.value.load_state_dict(torch.load("./model/hopper-medium-expert-append-v2.pt"))
-
     replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
-    replay_buffer.convert_D4RL(env.get_dataset())
-    epi_len = replay_buffer.check_epi_rank()
-
-    replay_buffer1 = utils.ReplayBuffer(state_dim, action_dim)
-    replay_buffer1.convert_D4RL(env1.get_dataset())
-    epi_len1 = replay_buffer1.check_epi_rank()
-    print(epi_len,epi_len1)
-
-
+    medium = env.get_dataset()
+    expert = env1.get_dataset()
+    new_dict = dict(observations= np.concatenate((medium['observations'],expert['observations']),axis=0),\
+                    actions= np.concatenate((medium['observations'],expert['observations']),axis=0), \
+                    next_observations=np.concatenate((medium['next_observations'], expert['next_observations']), axis=0),\
+                    rewards=np.concatenate((medium['rewards'], expert['rewards']), axis=0), \
+                    terminals=np.concatenate((medium['terminals'], expert['terminals']), axis=0), \
+                    timeouts=np.concatenate((medium['timeouts'], expert['timeouts']), axis=0),\
+                    )
+    replay_buffer.convert_D4RL(new_dict)
 
     if args.normalize:
         mean, std = replay_buffer.normalize_states()
     else:
         mean, std = 0, 1
 
-    fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
+    for t in range(int(args.max_timesteps_Q)):
+        policy.train_v(replay_buffer, args.batch_size)
+        if (t + 1) % args.eval_freq == 0:
+            v = policy.test_v(replay_buffer, args.batch_size)
+            print("[steps] :", t + 1, "v : ", sum(v) / float(args.batch_size))
 
-    mReturns, mweights, mzero_nums = [], [], []
-    for i in range(epi_len-1):
-        mweight,mReturn,mzero_num=policy.test_epi_rv(replay_buffer, i)
-        mweights.append(mweight)
-        mReturns.append(mReturn)
-        mzero_nums.append(mzero_num)
-    mweights = np.array(mweights)
-    mReturns   = np.array(mReturns)
-    mzero_nums = np.array(mzero_nums)
-    print("==================================")
-    eReturns, eweights, ezero_nums = [], [], []
-    for i in range(epi_len1-1):
-        eweight, eReturn, ezero_num = policy.test_epi_rv(replay_buffer1, i)
-        eweights.append(eweight)
-        eReturns.append(eReturn)
-        ezero_nums.append(ezero_num)
-        # print(eReturn)
-    eweights = np.array(eweights)
-    eReturns = np.array(eReturns)
-    ezero_nums = np.array(ezero_nums)
-    all_return = copy.deepcopy(np.concatenate((mReturns,eReturns),axis=0))
-    idx=np.argsort(all_return.reshape(-1))
-
-    ax1.plot(idx[:2185], mweights, 'o', color='skyblue',label="medium")
-    ax1.plot(idx[2185:], eweights, 'o', color='salmon',label="expert")
-
-    weights = np.concatenate((mweights, eweights), axis=0)
-    weights =  weights[idx]
-    zero_nums = np.concatenate((mzero_nums, ezero_nums), axis=0)
-    zero_nums = zero_nums[idx]
-
-    x = np.array([i * 25 for i in range(1,(epi_len+epi_len1)//25 + 1)])
-    interval_weight = []
-    for i in range((epi_len+epi_len1)//25-1):
-        interval_weight.append(weights[x[i]:x[i+1]].mean())
-    interval_weight.append(weights[x[i+1]:x[i + 1]+25].mean())
-    interval_weight = np.array(interval_weight)
-    ax1.plot(x, interval_weight, 'o-', color='orange')
-
-    interval_zero = []
-    for i in range((epi_len+epi_len1)//25-1):
-        interval_zero.append(zero_nums[x[i]:x[i+1]].mean())
-    interval_zero.append(zero_nums[x[i+1]:x[i + 1]+25].mean())
-    interval_zero = np.array(interval_zero)
-    print(x.shape,interval_zero.shape)
-    ax2.plot(x, interval_zero*5,'o-',color='grey')
-
-
-
-    plt.title(args.env[:-3])
-    ax1.set_xlabel("Episode Return Rank")
-    ax1.set_ylabel("Mean of Exponential Advantage Weight")
-    ax2.set_ylabel("Normalized Number of Negative Advantage")
-    ax1.grid()
-    ax1.legend()
-    plt.show()
-
-
-
-
-
-
+    torch.save(policy.value.state_dict(),"./model/"+args.env+".pt")
