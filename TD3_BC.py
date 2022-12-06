@@ -143,27 +143,6 @@ class TD3_BC(object):
 		with torch.no_grad():
 			v_value = self.value(state)
 		return v_value
-	def test_epi_rv(self, replay_buffer, epi_i):
-		state, action, next_state, reward, not_done, Return, rank = replay_buffer.get_epi(epi_i)
-		with torch.no_grad():
-			rv = Return - self.value(state)
-			weight = (torch.exp((rv) / 5.0) - torch.ones_like(Return)).clamp(0.0, 10.0)
-			#
-			# weight = (torch.exp((rv) / 5.0)).clamp(0.0, 10.0)
-			weight_zero_num = sum(torch.where(weight == 0, True, False)) / weight.shape[0]
-		return weight.mean().cpu().detach().numpy(), Return[0].cpu().detach().numpy(), weight_zero_num.cpu().detach().numpy()
-
-	def test_epi_rv_rank(self, replay_buffer, epi_i):
-		state, action, next_state, reward, not_done, Return, rank = replay_buffer.get_epi(epi_i)
-		with torch.no_grad():
-			rv = Return - self.value(state)
-			weight = (torch.exp((rv) / 5.0) - torch.ones_like(Return)).clamp(0.0, 10.0)
-			#
-			# weight = (torch.exp((rv) / 5.0)).clamp(0.0, 10.0)
-			weight_zero_num = sum(torch.where(weight==0,True,False))/weight.shape[0]
-		return weight.mean().cpu().detach().numpy(), rank[0].cpu().detach().numpy(), weight_zero_num.cpu().detach().numpy()
-
-
 
 	def train(self, replay_buffer, t, batch_size=256, clutch=1e5):
 

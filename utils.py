@@ -72,30 +72,3 @@ class ReplayBuffer(object):
 		self.state = (self.state - mean)/std
 		self.next_state = (self.next_state - mean)/std
 		return mean, std
-
-	def check_epi_rank(self):
-		terminal = 1. - self.not_done
-		temp = terminal + self.timeout
-		self.idx = np.where(temp  > 0)[0]
-		self.idx = np.concatenate((np.array([0]), self.idx[:-1] + 1))
-		self.epi_num=self.idx.shape[0]
-		print('idx :',self.idx, "epi_num",self.epi_num)
-		rank = self.Return[self.idx,0].argsort()
-		tmp = np.array([])
-		for i in range(self.epi_num-1):
-			tmp = np.append(tmp, np.ones((self.idx[i + 1] - self.idx[i])) * rank[i])
-		tmp = np.append(tmp, np.ones((self.Return.shape[0] - self.idx[-1])) * rank[-1])
-		self.rank = tmp
-		print(self.rank)
-		return self.epi_num
-
-	def get_epi(self, i):
-		return (
-			torch.FloatTensor(self.state[self.idx[i]:self.idx[i+1]]).to(self.device),
-			torch.FloatTensor(self.action[self.idx[i]:self.idx[i+1]]).to(self.device),
-			torch.FloatTensor(self.next_state[self.idx[i]:self.idx[i+1]]).to(self.device),
-			torch.FloatTensor(self.reward[self.idx[i]:self.idx[i+1]]).to(self.device),
-			torch.FloatTensor(self.not_done[self.idx[i]:self.idx[i+1]]).to(self.device),
-			torch.FloatTensor(self.Return[self.idx[i]:self.idx[i+1]]).to(self.device),
-			torch.FloatTensor(self.rank[self.idx[i]:self.idx[i+1]]).to(self.device),
-		)
