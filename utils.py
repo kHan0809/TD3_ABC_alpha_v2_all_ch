@@ -72,3 +72,7 @@ class ReplayBuffer(object):
 		self.state = (self.state - mean)/std
 		self.next_state = (self.next_state - mean)/std
 		return mean, std
+
+	def convert_top10(self):
+
+
