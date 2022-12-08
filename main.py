@@ -37,7 +37,7 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
 	# Experiment
-	parser.add_argument("--policy", default="BC")               # Policy name
+	parser.add_argument("--policy", default="10BC")               # Policy name
 	parser.add_argument("--env", default="hopper-medium-replay-v2")        # OpenAI gym environment name
 	parser.add_argument("--seed", default=1, type=int)              # Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--eval_freq", default=5e3, type=int)       # How often (time steps) we evaluate
@@ -97,6 +97,8 @@ if __name__ == "__main__":
 
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
 	replay_buffer.convert_D4RL(env.get_dataset())
+	if args.policy == "10BC":
+		replay_buffer.convert_top10()
 
 	if args.normalize:
 		mean,std = replay_buffer.normalize_states() 

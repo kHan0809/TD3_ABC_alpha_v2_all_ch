@@ -74,5 +74,24 @@ class ReplayBuffer(object):
 		return mean, std
 
 	def convert_top10(self):
+		terminal = 1. - self.not_done
+		temp = terminal + self.timeout
+		self.idx = np.where(temp > 0)[0]
+		self.idx = np.concatenate((np.array([0]), self.idx[:-1] + 1))
+		self.epi_num = self.idx.shape[0]
+		print('idx :', self.idx, "epi_num", self.epi_num)
+		rank = self.Return[self.idx, 0].argsort()
+		tmp = np.array([])
+		for i in range(self.epi_num - 1):
+			tmp = np.append(tmp, np.ones((self.idx[i + 1] - self.idx[i])) * rank[i])
+		tmp = np.append(tmp, np.ones((self.Return.shape[0] - self.idx[-1])) * rank[-1])
+		self.rank = tmp
+		top10line=self.epi_num*0.9
+		self.top10idx = np.where(self.rank > top10line)[0]
+		print("Top10 sample num : ", self.top10idx.shape)
+
+		self.state = self.state[self.top10idx]
+		self.action = self.action[self.top10idx]
+		self.size = self.state.shape[0]
 
 
