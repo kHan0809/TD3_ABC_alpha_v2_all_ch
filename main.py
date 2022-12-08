@@ -6,7 +6,7 @@ import os
 import d4rl
 
 import utils
-import TD3_BC
+import BC
 
 
 # Runs policy for X episodes and returns D4RL score
@@ -37,8 +37,8 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
 	# Experiment
-	parser.add_argument("--policy", default="TD3_BC")               # Policy name
-	parser.add_argument("--env", default="walker2d-medium-v2")        # OpenAI gym environment name
+	parser.add_argument("--policy", default="BC")               # Policy name
+	parser.add_argument("--env", default="hopper-medium-replay-v2")        # OpenAI gym environment name
 	parser.add_argument("--seed", default=1, type=int)              # Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--eval_freq", default=5e3, type=int)       # How often (time steps) we evaluate
 	parser.add_argument("--max_timesteps",   default=1e6, type=int)   # Max time steps to run environment
@@ -86,18 +86,10 @@ if __name__ == "__main__":
 		"state_dim": state_dim,
 		"action_dim": action_dim,
 		"max_action": max_action,
-		"discount": args.discount,
-		"tau": args.tau,
-		# TD3
-		"policy_noise": args.policy_noise * max_action,
-		"noise_clip": args.noise_clip * max_action,
-		"policy_freq": args.policy_freq,
-		# TD3 + BC
-		"alpha": args.alpha
 	}
 
 	# Initialize policy
-	policy = TD3_BC.TD3_BC(**kwargs)
+	policy = BC.BC(**kwargs)
 
 	if args.load_model != "":
 		policy_file = file_name if args.load_model == "default" else args.load_model
@@ -109,12 +101,6 @@ if __name__ == "__main__":
 		mean,std = replay_buffer.normalize_states() 
 	else:
 		mean,std = 0,1
-
-	for t in range(int(args.max_timesteps_Q)):
-		policy.train_v(replay_buffer, args.batch_size)
-		if (t + 1) % args.eval_freq == 0:
-			v=policy.test_v(replay_buffer, args.batch_size)
-			print("[steps] :", t+1,"v : ", sum(v)/float(args.batch_size))
 
 	evaluations = []
 	for t in range(int(args.max_timesteps)):
