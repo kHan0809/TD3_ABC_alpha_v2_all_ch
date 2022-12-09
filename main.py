@@ -6,7 +6,7 @@ import os
 import d4rl
 
 import utils
-import TD3_BC
+import AWR
 
 
 # Runs policy for X episodes and returns D4RL score
@@ -37,8 +37,8 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
 	# Experiment
-	parser.add_argument("--policy", default="TD3_BC")               # Policy name
-	parser.add_argument("--env", default="walker2d-medium-v2")        # OpenAI gym environment name
+	parser.add_argument("--policy", default="AWR")               # Policy name
+	parser.add_argument("--env", default="halfcheetah-medium-v2")        # OpenAI gym environment name
 	parser.add_argument("--seed", default=1, type=int)              # Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--eval_freq", default=5e3, type=int)       # How often (time steps) we evaluate
 	parser.add_argument("--max_timesteps",   default=1e6, type=int)   # Max time steps to run environment
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 	parser.add_argument("--policy_noise", default=0.2)              # Noise added to target policy during critic update
 	parser.add_argument("--noise_clip", default=0.5)                # Range to clip target policy noise
 	parser.add_argument("--policy_freq", default=2, type=int)       # Frequency of delayed policy updates
-	parser.add_argument("--clutch", default=9e5, type=int)  # Frequency of delayed policy updates
+	parser.add_argument("--clutch", default=3e4, type=int)  # Frequency of delayed policy updates
 	# TD3 + BC
 	parser.add_argument("--alpha", default=2.5)
 	parser.add_argument("--normalize", default=True)
@@ -79,7 +79,7 @@ if __name__ == "__main__":
 	np.random.seed(args.seed)
 	
 	state_dim = env.observation_space.shape[0]
-	action_dim = env.action_space.shape[0] 
+	action_dim = env.action_space.shape[0]
 	max_action = float(env.action_space.high[0])
 
 	kwargs = {
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 	}
 
 	# Initialize policy
-	policy = TD3_BC.TD3_BC(**kwargs)
+	policy = AWR.AWR(**kwargs)
 
 	if args.load_model != "":
 		policy_file = file_name if args.load_model == "default" else args.load_model
@@ -106,15 +106,9 @@ if __name__ == "__main__":
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
 	replay_buffer.convert_D4RL(env.get_dataset())
 	if args.normalize:
-		mean,std = replay_buffer.normalize_states() 
+		mean,std = replay_buffer.normalize_states()
 	else:
 		mean,std = 0,1
-
-	for t in range(int(args.max_timesteps_Q)):
-		policy.train_v(replay_buffer, args.batch_size)
-		if (t + 1) % args.eval_freq == 0:
-			v=policy.test_v(replay_buffer, args.batch_size)
-			print("[steps] :", t+1,"v : ", sum(v)/float(args.batch_size))
 
 	evaluations = []
 	for t in range(int(args.max_timesteps)):
@@ -124,4 +118,3 @@ if __name__ == "__main__":
 			print(f"Time steps: {t+1}")
 			evaluations.append(eval_policy(policy, args.env, args.seed, mean, std))
 			np.save(f"./results/{file_name}", evaluations)
-			if args.save_model: policy.save(f"./models/{file_name}")

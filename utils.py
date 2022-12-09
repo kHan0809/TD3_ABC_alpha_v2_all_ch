@@ -57,7 +57,7 @@ class ReplayBuffer(object):
 
 	def convert_D4RL(self, dataset):
 		self.state = dataset['observations']
-		self.action = dataset['actions']
+		self.action = np.clip(dataset['actions'],-0.9999,0.9999)
 		self.next_state = dataset['next_observations']
 		self.reward = dataset['rewards'].reshape(-1,1)
 		self.not_done = 1. - dataset['terminals'].reshape(-1,1)
