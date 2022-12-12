@@ -112,34 +112,34 @@ if __name__ == "__main__":
 			plt.ylabel("Normalized Returns",fontsize=10)
 		plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
 
-	algo = "10BC/"
-	x=np.linspace(5000,1e6,200)
-
-	p_dir = "./results/"+algo
-	ext = ".npy"
-	total_sum = 0
-	for idx,env in enumerate(envs):
-		data = []
-		for file_name in os.listdir(p_dir):
-			if env in file_name:
-				data.append(np.load(p_dir+file_name))
-			else:
-				pass
-		mean = np.array(data).mean(axis=0)
-		std  = np.array(data).std(axis=0)
-		total_sum += mean[-1]
-
-		plt.subplot(3, 3, idx + 1)
-		if idx==8:
-			plt.plot(x,mean,linewidth=0.5,label="10BC")
-		else:
-			plt.plot(x, mean, linewidth=0.5)
-		plt.fill_between(x,mean-std/div_std, mean+std/div_std, alpha=0.2)
-		plt.title(env,fontsize=10)
-		plt.xlabel("Training step",fontsize=10)
-		if idx == 0:
-			plt.ylabel("Normalized Returns",fontsize=10)
-		plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
+	# algo = "10BC/"
+	# x=np.linspace(5000,1e6,200)
+	#
+	# p_dir = "./results/"+algo
+	# ext = ".npy"
+	# total_sum = 0
+	# for idx,env in enumerate(envs):
+	# 	data = []
+	# 	for file_name in os.listdir(p_dir):
+	# 		if env in file_name:
+	# 			data.append(np.load(p_dir+file_name))
+	# 		else:
+	# 			pass
+	# 	mean = np.array(data).mean(axis=0)
+	# 	std  = np.array(data).std(axis=0)
+	# 	total_sum += mean[-1]
+	#
+	# 	plt.subplot(3, 3, idx + 1)
+	# 	if idx==8:
+	# 		plt.plot(x,mean,linewidth=0.5,label="10BC")
+	# 	else:
+	# 		plt.plot(x, mean, linewidth=0.5)
+	# 	plt.fill_between(x,mean-std/div_std, mean+std/div_std, alpha=0.2)
+	# 	plt.title(env,fontsize=10)
+	# 	plt.xlabel("Training step",fontsize=10)
+	# 	if idx == 0:
+	# 		plt.ylabel("Normalized Returns",fontsize=10)
+	# 	plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
 
 	plt.legend()
 	plt.show()
