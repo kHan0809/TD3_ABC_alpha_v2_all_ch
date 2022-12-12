@@ -27,7 +27,7 @@ if __name__ == "__main__":
 		"hopper-medium-replay-v2",
 		"walker2d-medium-replay-v2",
 	]
-	p_dir = "./results/"
+	p_dir = "./results/10BC/"
 	ext = ".npy"
 	total_sum = 0
 	for idx,env in enumerate(envs):
