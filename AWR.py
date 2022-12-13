@@ -109,35 +109,21 @@ class AWR(object):
 
 		# Sample replay buffer
 		state, action, next_state, reward, not_done, Return = replay_buffer.sample(batch_size)
+		if t%1500<500:
+			v_loss = F.mse_loss(input=self.value(state), target=Return)
+			self.value.zero_grad()
+			v_loss.backward()
+			self.value_optimizer.step()
+		else:
+			with torch.no_grad():
+				v_value = self.value(state)
+				rv = Return - v_value
+				weight = torch.minimum(torch.exp((rv) / 1.0), torch.ones_like(rv)*20.0)
+			log_pi = self.actor.get_log_prob(state, action)
 
-		v_loss = F.mse_loss(input=self.value(state), target=Return)
-		self.value.zero_grad()
-		v_loss.backward()
-		self.value_optimizer.step()
+			actor_loss = -torch.mean((weight * log_pi))
 
-		# if t > clutch:
-		# 	with torch.no_grad():
-		# 		v_value = self.value(state)
-		# 		rv = Return - v_value
-		# 		weight = torch.minimum(torch.exp((rv) / 1.0), torch.ones_like(rv)*20.0)
-		#
-		# 	mean, log_pi = self.actor(state)
-		# 	actor_loss = -(weight * log_pi).mean()
-		#
-		# 	# Optimize the actor
-		# 	self.actor_optimizer.zero_grad()
-		# 	actor_loss.backward()
-		# 	self.actor_optimizer.step()
-		with torch.no_grad():
-			v_value = self.value(state)
-			rv = Return - v_value
-			weight = torch.minimum(torch.exp((rv) / 1.0), torch.ones_like(rv)*20.0)
-		log_pi = self.actor.get_log_prob(state, action)
-
-		actor_loss = -torch.mean((weight * log_pi))
-
-
-		# Optimize the actor
-		self.actor_optimizer.zero_grad()
-		actor_loss.backward()
-		self.actor_optimizer.step()
+			# Optimize the actor
+			self.actor_optimizer.zero_grad()
+			actor_loss.backward()
+			self.actor_optimizer.step()
