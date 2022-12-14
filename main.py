@@ -38,8 +38,8 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	# Experiment
 	parser.add_argument("--policy", default="TD3_BC")               # Policy name
-	parser.add_argument("--env", default="walker2d-medium-v2")        # OpenAI gym environment name
-	parser.add_argument("--seed", default=1, type=int)              # Sets Gym, PyTorch and Numpy seeds
+	parser.add_argument("--env", default="walker2d-medium-expert-v2")        # OpenAI gym environment name
+	parser.add_argument("--seed", default=2, type=int)              # Sets Gym, PyTorch and Numpy seeds
 	parser.add_argument("--eval_freq", default=5e3, type=int)       # How often (time steps) we evaluate
 	parser.add_argument("--max_timesteps",   default=1e6, type=int)   # Max time steps to run environment
 	parser.add_argument("--max_timesteps_Q", default=3e4, type=int)  # Max time steps to run environment
@@ -104,7 +104,9 @@ if __name__ == "__main__":
 		policy.load(f"./models/{policy_file}")
 
 	replay_buffer = utils.ReplayBuffer(state_dim, action_dim)
-	replay_buffer.convert_D4RL(env.get_dataset())
+	dataset=env.get_dataset()
+	replay_buffer.convert_D4RL(dataset)
+
 	if args.normalize:
 		mean,std = replay_buffer.normalize_states() 
 	else:
@@ -115,6 +117,7 @@ if __name__ == "__main__":
 		if (t + 1) % args.eval_freq == 0:
 			v=policy.test_v(replay_buffer, args.batch_size)
 			print("[steps] :", t+1,"v : ", sum(v)/float(args.batch_size))
+			replay_buffer.Return_recompute(policy.value)
 
 	evaluations = []
 	for t in range(int(args.max_timesteps)):

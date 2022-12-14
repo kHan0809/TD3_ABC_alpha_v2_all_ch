@@ -31,6 +31,24 @@ class ReplayBuffer(object):
 		Return_buffer = copy.deepcopy(np.flip(np.array(Return_buffer, dtype=np.float32)))
 		self.Return = Return_buffer.reshape(-1,1)
 
+	def Return_recompute(self,value_func):
+		states = torch.FloatTensor(self.state).to(self.device)
+		values = value_func(states).cpu().detach().numpy()
+		td_lambda = 0.95
+		Return_buffer = []
+		for i in reversed(range(self.size)):
+			if self.terminals[i] or self.timeout[i] or i == (self.size - 1):
+				tmp_return = self.reward[i]
+				Return_buffer.append(tmp_return)
+			else:
+				tmp_return = self.reward[i] + 0.99 * ((1-td_lambda)*values[i+1]+tmp_return*(td_lambda))
+				Return_buffer.append(tmp_return)
+
+		Return_buffer = copy.deepcopy(np.flip(np.array(Return_buffer, dtype=np.float32)))
+		self.Return = Return_buffer.reshape(-1,1)
+
+
+
 	def add(self, state, action, next_state, reward, done):
 		self.state[self.ptr] = state
 		self.action[self.ptr] = action
@@ -62,6 +80,7 @@ class ReplayBuffer(object):
 		self.reward = dataset['rewards'].reshape(-1,1)
 		self.not_done = 1. - dataset['terminals'].reshape(-1,1)
 		self.timeout = dataset['timeouts'].reshape(-1,1)
+		self.terminals = dataset['terminals'].reshape(-1,1)
 		self.size = self.state.shape[0]
 		self.addReturn(dataset)
 
