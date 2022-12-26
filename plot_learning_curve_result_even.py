@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
 	div_std = 1
 	algo = "TD3_IABC/"
-	x=np.linspace(5000,1e6,200)
+	x=np.linspace(10000,1e6,100)
 
 	p_dir = "./results/"+algo
 	ext = ".npy"
@@ -37,8 +37,8 @@ if __name__ == "__main__":
 				data.append(np.load(p_dir+file_name))
 			else:
 				pass
-		mean = np.array(data).mean(axis=0)
-		std  = np.array(data).std(axis=0)
+		mean = np.array(data).mean(axis=0)[0::2]
+		std  = np.array(data).std(axis=0)[0::2]
 		total_sum += mean[-1]
 
 		plt.subplot(3, 3, idx + 1,)
@@ -55,7 +55,6 @@ if __name__ == "__main__":
 		plt.subplots_adjust(left=0.2, bottom=0.1, right=1.2, top=0.9, wspace=0.3, hspace=0.4)
 
 	algo = "TD3_BC/"
-	x=np.linspace(5000,1e6,200)
 
 	p_dir = "./results/"+algo
 	ext = ".npy"
@@ -67,8 +66,8 @@ if __name__ == "__main__":
 				data.append(np.load(p_dir+file_name))
 			else:
 				pass
-		mean = np.array(data).mean(axis=0)
-		std  = np.array(data).std(axis=0)
+		mean = np.array(data).mean(axis=0)[0::2]
+		std  = np.array(data).std(axis=0)[0::2]
 		total_sum += mean[-1]
 
 		plt.subplot(3, 3, idx + 1)
@@ -84,7 +83,6 @@ if __name__ == "__main__":
 		plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
 
 	algo = "BC/"
-	x=np.linspace(5000,1e6,200)
 
 	p_dir = "./results/"+algo
 	ext = ".npy"
@@ -96,8 +94,8 @@ if __name__ == "__main__":
 				data.append(np.load(p_dir+file_name))
 			else:
 				pass
-		mean = np.array(data).mean(axis=0)
-		std  = np.array(data).std(axis=0)
+		mean = np.array(data).mean(axis=0)[0::2]
+		std  = np.array(data).std(axis=0)[0::2]
 		total_sum += mean[-1]
 
 		plt.subplot(3, 3, idx + 1)
@@ -113,7 +111,6 @@ if __name__ == "__main__":
 		plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
 
 	algo = "AWR/"
-	x=np.linspace(5000,1e6,200)
 
 	p_dir = "./results/"+algo
 	ext = ".npy"
@@ -125,8 +122,8 @@ if __name__ == "__main__":
 				data.append(np.load(p_dir+file_name))
 			else:
 				pass
-		mean = np.array(data).mean(axis=0)
-		std  = np.array(data).std(axis=0)
+		mean = np.array(data).mean(axis=0)[0::2]
+		std  = np.array(data).std(axis=0)[0::2]
 		total_sum += mean[-1]
 
 		plt.subplot(3, 3, idx + 1)
@@ -142,7 +139,6 @@ if __name__ == "__main__":
 		plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
 
 	algo = "TD3_IABCwDprime/"
-	x=np.linspace(5000,1e6,200)
 
 	p_dir = "./results/"+algo
 	ext = ".npy"
@@ -154,8 +150,8 @@ if __name__ == "__main__":
 				data.append(np.load(p_dir+file_name))
 			else:
 				pass
-		mean = np.array(data).mean(axis=0)
-		std  = np.array(data).std(axis=0)
+		mean = np.array(data).mean(axis=0)[0::2]
+		std  = np.array(data).std(axis=0)[0::2]
 		total_sum += mean[-1]
 
 		plt.subplot(3, 3, idx + 1)
@@ -171,7 +167,6 @@ if __name__ == "__main__":
 		plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
 
 	algo = "only_TD3_IABC/"
-	x=np.linspace(5000,1e6,200)
 
 	p_dir = "./results/"+algo
 	ext = ".npy"
@@ -183,8 +178,8 @@ if __name__ == "__main__":
 				data.append(np.load(p_dir+file_name))
 			else:
 				pass
-		mean = np.array(data).mean(axis=0)
-		std  = np.array(data).std(axis=0)
+		mean = np.array(data).mean(axis=0)[0::2]
+		std  = np.array(data).std(axis=0)[0::2]
 		total_sum += mean[-1]
 
 		plt.subplot(3, 3, idx + 1)
