@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
 
 	div_std = 1
-	algo = "TD3_ABC/"
+	algo = "TD3_IABC/"
 	x=np.linspace(5000,1e6,200)
 
 	p_dir = "./results/"+algo
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
 		plt.subplot(3, 3, idx + 1,)
 		if idx == 8:
-			plt.plot(x, mean, linewidth=0.5, label="TD3+ABC")
+			plt.plot(x, mean, linewidth=0.5, label="TD3+IABC")
 		else:
 			plt.plot(x, mean, linewidth=0.5)
 		plt.fill_between(x,mean-std/div_std, mean+std/div_std, alpha=0.2)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 			plt.ylabel("Normalized Returns",fontsize=10)
 		plt.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.4)
 
-	algo = "TD3_ABCwDprime/"
+	algo = "TD3_IABCwDprime/"
 	x=np.linspace(5000,1e6,200)
 
 	p_dir = "./results/"+algo
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
 		plt.subplot(3, 3, idx + 1)
 		if idx==8:
-			plt.plot(x,mean,linewidth=0.5,label="TD3_ABC with D'")
+			plt.plot(x,mean,linewidth=0.5,label="TD3_IABC with D'")
 		else:
 			plt.plot(x, mean, linewidth=0.5)
 		plt.fill_between(x,mean-std/div_std, mean+std/div_std, alpha=0.2)
