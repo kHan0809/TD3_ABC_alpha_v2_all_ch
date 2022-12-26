@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
 		plt.subplot(3, 3, idx + 1)
 		if idx==8:
-			plt.plot(x,mean,linewidth=0.5,label="TD3_IABC with D'")
+			plt.plot(x,mean,linewidth=0.5,label="TD3+IABC with D'")
 		else:
 			plt.plot(x, mean, linewidth=0.5)
 		plt.fill_between(x,mean-std/div_std, mean+std/div_std, alpha=0.2)
