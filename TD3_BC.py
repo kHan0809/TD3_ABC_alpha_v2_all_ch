@@ -147,8 +147,8 @@ class TD3_BC(object):
 		state, action, next_state, reward, not_done, Return, rank = replay_buffer.get_epi(epi_i)
 		with torch.no_grad():
 			rv = Return - self.value(state)
-			weight = (torch.exp((rv) / 5.0) - torch.ones_like(Return)).clamp(0.0, 10.0)
-			#
+			weight = (torch.exp((rv) / 5.0) - torch.ones_like(Return)).clamp(0.0, 0.5)
+			# print(Return[5],self.value(state)[5])
 			# weight = (torch.exp((rv) / 5.0)).clamp(0.0, 10.0)
 			weight_zero_num = sum(torch.where(weight == 0, True, False)) / weight.shape[0]
 		return weight.mean().cpu().detach().numpy(), Return[0].cpu().detach().numpy(), weight_zero_num.cpu().detach().numpy()
@@ -157,7 +157,7 @@ class TD3_BC(object):
 		state, action, next_state, reward, not_done, Return, rank = replay_buffer.get_epi(epi_i)
 		with torch.no_grad():
 			rv = Return - self.value(state)
-			weight = (torch.exp((rv) / 5.0) - torch.ones_like(Return)).clamp(0.0, 10.0)
+			weight = (torch.exp((rv) / 5.0) - torch.ones_like(Return)).clamp(0.0, 0.5)
 			#
 			# weight = (torch.exp((rv) / 5.0)).clamp(0.0, 10.0)
 			weight_zero_num = sum(torch.where(weight==0,True,False))/weight.shape[0]

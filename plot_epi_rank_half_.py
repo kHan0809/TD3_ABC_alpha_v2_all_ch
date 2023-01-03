@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Experiment
     parser.add_argument("--policy", default="TD3_BC")  # Policy name
-    parser.add_argument("--env", default="hopper-medium-expert-v2")  # OpenAI gym environment name
+    parser.add_argument("--env", default="halfcheetah-medium-expert-v2")  # OpenAI gym environment name
     parser.add_argument("--seed", default=1, type=int)  # Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--eval_freq", default=5e3, type=int)  # How often (time steps) we evaluate
     parser.add_argument("--max_timesteps", default=1e6, type=int)  # Max time steps to run environment
@@ -50,8 +50,8 @@ if __name__ == "__main__":
     if args.save_model and not os.path.exists("./models"):
         os.makedirs("./models")
 
-    env = gym.make("hopper-medium-v2")
-    env1 = gym.make("hopper-expert-v2")
+    env = gym.make("halfcheetah-medium-v2")
+    env1 = gym.make("halfcheetah-expert-v2")
 
     # Set seeds
     env.seed(args.seed)
@@ -80,10 +80,6 @@ if __name__ == "__main__":
     # Initialize policy
     policy = TD3_BC.TD3_BC(**kwargs)
 
-    if args.load_model != "":
-        policy_file = file_name if args.load_model == "default" else args.load_model
-        policy.load(f"./models/{policy_file}")
-
     policy.value.load_state_dict(torch.load("./model/"+args.env+".pt"))
     # policy.value.load_state_dict(torch.load("./model/hopper-medium-expert-append-v2.pt"))
 
@@ -94,7 +90,6 @@ if __name__ == "__main__":
     replay_buffer1 = utils.ReplayBuffer(state_dim, action_dim)
     replay_buffer1.convert_D4RL(env1.get_dataset())
     epi_len1 = replay_buffer1.check_epi_rank()
-    print(epi_len,epi_len1)
 
 
 
@@ -106,7 +101,7 @@ if __name__ == "__main__":
 
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
-
+    print("==================================medium")
     mReturns, mweights, mzero_nums = [], [], []
     for i in range(epi_len-1):
         mweight,mReturn,mzero_num=policy.test_epi_rv(replay_buffer, i)
@@ -116,22 +111,21 @@ if __name__ == "__main__":
     mweights = np.array(mweights)
     mReturns   = np.array(mReturns)
     mzero_nums = np.array(mzero_nums)
-    print("==================================")
+    print("==================================expert")
     eReturns, eweights, ezero_nums = [], [], []
     for i in range(epi_len1-1):
         eweight, eReturn, ezero_num = policy.test_epi_rv(replay_buffer1, i)
         eweights.append(eweight)
         eReturns.append(eReturn)
         ezero_nums.append(ezero_num)
-        # print(eReturn)
     eweights = np.array(eweights)
     eReturns = np.array(eReturns)
     ezero_nums = np.array(ezero_nums)
+
     all_return = copy.deepcopy(np.concatenate((mReturns,eReturns),axis=0))
     idx=np.argsort(all_return.reshape(-1))
-
-    ax1.plot(idx[:2185], mweights, 'o', color='skyblue',label="medium")
-    ax1.plot(idx[2185:], eweights, 'o', color='salmon',label="expert")
+    ax1.plot(idx[:999], mweights, 'o', color='skyblue',label="medium")
+    ax1.plot(idx[999:], eweights, 'o', color='salmon',label="expert")
 
     weights = np.concatenate((mweights, eweights), axis=0)
     weights =  weights[idx]
@@ -148,11 +142,12 @@ if __name__ == "__main__":
 
     interval_zero = []
     for i in range((epi_len+epi_len1)//25-1):
+        # print(zero_nums[x[i]:x[i+1]].shape,x[i],x[i+1])
         interval_zero.append(zero_nums[x[i]:x[i+1]].mean())
     interval_zero.append(zero_nums[x[i+1]:x[i + 1]+25].mean())
     interval_zero = np.array(interval_zero)
     print(x.shape,interval_zero.shape)
-    ax2.plot(x, interval_zero,'o-',color='grey')
+    ax2.plot(x, interval_zero*5,'o-',color='grey')
 
 
 
@@ -161,7 +156,7 @@ if __name__ == "__main__":
     ax1.set_ylabel("Mean of Exponential Advantage Weight")
     ax2.set_ylabel("Normalized Number of Negative Advantage")
     ax1.grid()
-    ax1.legend(loc="center right")
+    ax1.legend(loc='upper left')
     plt.show()
 
 

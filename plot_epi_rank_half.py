@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Experiment
     parser.add_argument("--policy", default="TD3_BC")  # Policy name
-    parser.add_argument("--env", default="hopper-medium-expert-v2")  # OpenAI gym environment name
+    parser.add_argument("--env", default="halfcheetah-medium-expert-v2")  # OpenAI gym environment name
     parser.add_argument("--seed", default=1, type=int)  # Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--eval_freq", default=5e3, type=int)  # How often (time steps) we evaluate
     parser.add_argument("--max_timesteps", default=1e6, type=int)  # Max time steps to run environment
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     if args.save_model and not os.path.exists("./models"):
         os.makedirs("./models")
 
-    env = gym.make(args.env)
+    env = gym.make("halfcheetah-medium-expert-v2")
 
     # Set seeds
     env.seed(args.seed)
@@ -110,7 +110,9 @@ if __name__ == "__main__":
 
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
-    ax1.plot(ranks, weights, 'o',color='skyblue')
+    ax1.plot(ranks[:1000], weights[:1000], 'o',color='skyblue',label="medium")
+    ax1.plot(ranks[1000:], weights[1000:], 'o', color='salmon',label="expert")
+
 
 
 
@@ -132,10 +134,12 @@ if __name__ == "__main__":
 
 
     plt.title(args.env[:-3])
+
     ax1.set_xlabel("Episode Return Rank")
     ax1.set_ylabel("Mean of Exponential Advantage Weight")
     ax2.set_ylabel("Normalized Number of Negative Advantage")
     ax1.grid()
+    ax1.legend(loc='center right')
     plt.show()
 
 
