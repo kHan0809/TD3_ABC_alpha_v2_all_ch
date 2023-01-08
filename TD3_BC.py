@@ -151,6 +151,7 @@ class TD3_BC(object):
 			# print(Return[5],self.value(state)[5])
 			# weight = (torch.exp((rv) / 5.0)).clamp(0.0, 10.0)
 			weight_zero_num = sum(torch.where(weight == 0, True, False)) / weight.shape[0]
+			weight = rv.clamp(-20.0, 20.0)
 		return weight.mean().cpu().detach().numpy(), Return[0].cpu().detach().numpy(), weight_zero_num.cpu().detach().numpy()
 
 	def test_epi_rv_rank(self, replay_buffer, epi_i):
@@ -161,6 +162,7 @@ class TD3_BC(object):
 			#
 			# weight = (torch.exp((rv) / 5.0)).clamp(0.0, 10.0)
 			weight_zero_num = sum(torch.where(weight==0,True,False))/weight.shape[0]
+			weight = rv.clamp(-20.0, 20.0)
 		return weight.mean().cpu().detach().numpy(), rank[0].cpu().detach().numpy(), weight_zero_num.cpu().detach().numpy()
 
 
